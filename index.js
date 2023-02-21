@@ -12,12 +12,27 @@ MongoClient.connect(url, function(err, client) {
 
   // Define the pipeline
 
-  const pipeline = [
-    {$match:{price:{$lt: 200}}},
-    {$limit:3},
-    // {$group:{_id:1, total:{$sum:1}}},kjasdfiieiuhasdifukjiuadshf8wnu
-    {$project:{name:1, price:1, _id:0}}
-]
+  const pipeline =[
+    {
+      $match: {
+        name: { $regex: /chicken/, $options: 'i' }
+      }
+    },
+    {
+      $project: {
+        nameSubstring: {
+          $substr: ['$name', 0, 7] // extract the first 7 characters of the name field
+        },
+        price: 1
+      }
+    },
+    {
+      $group: {
+        _id: '$nameSubstring',
+        totalPrice: { $sum: '$price' }
+      }
+    }
+  ]
 
   // Execute the aggregation pipeline
   db.collection('products').aggregate(pipeline).toArray(function(err, result) {
